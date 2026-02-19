@@ -1,0 +1,73 @@
+# .clang-format
+# A clang-format configuration designed to approximate rustfmt defaults
+# (4-space indent, ~100 column width, minimal alignment, Allman braces)
+
+BasedOnStyle: GNU
+
+# Indentation / tabs
+IndentWidth: 4
+TabWidth: 4
+UseTab: Never
+IndentCaseLabels: true
+
+# Line length
+ColumnLimit: 100
+
+# Braces — every '{' on a new line (Allman style)
+BreakBeforeBraces: Allman
+BraceWrapping:
+  AfterClass: true
+  AfterControlStatement: true
+  AfterEnum: true
+  AfterFunction: true
+  AfterNamespace: true
+  AfterObjCDeclaration: true
+  AfterStruct: true
+  AfterUnion: true
+  BeforeCatch: true
+  BeforeElse: true
+
+# Keep lines compact where reasonable
+AllowShortIfStatementsOnASingleLine: false
+AllowShortLoopsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: Inline
+AllowShortBlocksOnASingleLine: false
+
+# Avoid horizontal alignment (rustfmt-like)
+AlignConsecutiveAssignments: false
+AlignConsecutiveDeclarations: false
+AlignOperands: false
+AlignTrailingComments: false
+
+DerivePointerAlignment: false
+PointerAlignment: Left
+
+# Spacing and parentheses
+SpacesBeforeTrailingComments: 1
+SpaceAfterCStyleCast: false
+SpaceBeforeParens: Never
+
+# C++11 braced lists
+Cpp11BracedListStyle: true
+
+# Include handling
+SortIncludes: true
+IncludeBlocks: Preserve
+
+# Comments
+ReflowComments: false
+
+# Penalties to avoid awkward line breaks
+PenaltyBreakAssignment: 1000
+PenaltyBreakBeforeFirstCallParameter: 19
+PenaltyExcessCharacter: 100
+PenaltyReturnTypeOnItsOwnLine: 60
+
+# Keep files tidy
+KeepEmptyLinesAtTheStartOfBlocks: false
+MaxEmptyLinesToKeep: 1
+
+# Conservative breaking behavior
+AllowAllParametersOfDeclarationOnNextLine: false
+
+# End of config
