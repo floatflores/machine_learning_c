@@ -17,7 +17,10 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 add_executable(Machine_Learning
     src/main.c
     src/arena.c
+    src/prng.c
 )
+
+target_link_libraries(Machine_Learning m)
 
 # 添加头文件搜索路径
 target_include_directories(Machine_Learning
