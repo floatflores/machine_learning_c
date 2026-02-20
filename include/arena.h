@@ -16,6 +16,12 @@ typedef struct
 
 } mem_arena;
 
+typedef struct
+{
+    mem_arena* arena;
+    u64 start_pos;
+} mem_arena_temp;
+
 mem_arena* arena_create(u64 reserve_size, u64 commit_size);
 void arena_destroy(mem_arena* arena);
 void* arena_push(mem_arena* arena, u64 size, b32 non_zero);
@@ -23,21 +29,28 @@ void arena_pop(mem_arena* arena, u64 size);
 void arena_pop_to(mem_arena* arena, u64 pos);
 void arena_clear(mem_arena* arena);
 
+mem_arena_temp arena_temp_begin(mem_arena* arena);
+void arena_temp_end(mem_arena_temp temp);
+
+static __thread mem_arena* scratch_arena_[2] = {NULL, NULL};
+mem_arena_temp arena_scratch_get(mem_arena** conflicts, u32 num_conflucts);
+void arena_scratch_release(mem_arena_temp scratch);
+
 u32 plat_get_pagesize(void);
 void* plat_mem_reserve(u64 size);
 b32 plat_mem_commit(void* ptr, u64 size);
 b32 plat_mem_decommit(void* ptr, u64 size);
 b32 plat_mem_release(void* ptr, u64 size);
 
-#endif // !ARENA_H
-
-// #define ARENA_IMPLEMENTATION
-#ifdef ARENA_IMPLEMENTATION
-
 #define PUSH_STRUCT_ARENA(arena, T) (T*)arena_push((arena), sizeof(T), false)
 #define PUSH_STRUCT_ARENA_NZ(arena, T) (T*)arena_push((arena), sizeof(T), true)
 #define PUSH_ARRAY_ARENA(arena, T, n) (T*)arena_push((arena), sizeof(T) * (n), false)
 #define PUSH_ARRAY_ARENA_NZ(arena, T, n) (T*)arena_push((arena), sizeof(T) * (n), true)
+
+#endif // !ARENA_H
+
+// #define ARENA_IMPLEMENTATION
+#ifdef ARENA_IMPLEMENTATION
 
 mem_arena*
 arena_create(u64 reserve_size, u64 commit_size)
@@ -127,6 +140,63 @@ void
 arena_clear(mem_arena* arena)
 {
     arena_pop_to(arena, ARENA_BASE_POS);
+}
+
+mem_arena_temp
+arena_temp_begin(mem_arena* arena)
+{
+    return (mem_arena_temp){.arena = arena, .start_pos = arena->pos};
+}
+
+void
+arena_temp_end(mem_arena_temp temp)
+{
+    arena_pop_to(temp.arena, temp.start_pos);
+}
+
+mem_arena_temp
+arena_scratch_get(mem_arena** conflicts, u32 num_conflucts)
+{
+    i32 scratch_index = -1;
+
+    for(i32 i = 0; i < 2; i++)
+    {
+        b32 conflict_found = false;
+        for(u32 j = 0; j < num_conflucts; j++)
+        {
+            if(scratch_arena_[i] == conflicts[j])
+            {
+                conflict_found = true;
+                break;
+            }
+        }
+
+        if(!conflict_found)
+        {
+            scratch_index = i;
+            break;
+        }
+    }
+
+    if(scratch_index == -1)
+    {
+        return (mem_arena_temp){0};
+    }
+
+    mem_arena** selected = &scratch_arena_[scratch_index];
+
+    if(*selected == NULL)
+    {
+        *selected = arena_create(MiB(64), MiB(1));
+    }
+
+    return arena_temp_begin(*selected);
+}
+
+void
+arena_scratch_release(mem_arena_temp scratch)
+{
+    arena_temp_end(scratch);
 }
 
 #ifdef _WIN32

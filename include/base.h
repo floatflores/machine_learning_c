@@ -1,6 +1,7 @@
 #ifndef BASE_H
 #define BASE_H
 
+#include <assert.h>
 #include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
