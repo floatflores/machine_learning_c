@@ -11,7 +11,7 @@ UseTab: Never
 IndentCaseLabels: true
 
 # Line length
-ColumnLimit: 100
+ColumnLimit: 60
 
 # Braces — every '{' on a new line (Allman style)
 BreakBeforeBraces: Allman
@@ -34,7 +34,7 @@ AllowShortFunctionsOnASingleLine: Inline
 AllowShortBlocksOnASingleLine: false
 
 # Avoid horizontal alignment (rustfmt-like)
-AlignConsecutiveAssignments: false
+AlignConsecutiveAssignments: true
 AlignConsecutiveDeclarations: false
 AlignOperands: false
 AlignTrailingComments: false

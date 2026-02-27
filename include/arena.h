@@ -33,7 +33,8 @@ mem_arena_temp arena_temp_begin(mem_arena* arena);
 void arena_temp_end(mem_arena_temp temp);
 
 static __thread mem_arena* scratch_arena_[2] = {NULL, NULL};
-mem_arena_temp arena_scratch_get(mem_arena** conflicts, u32 num_conflucts);
+mem_arena_temp arena_scratch_get(mem_arena** conflicts,
+                                 u32 num_conflucts);
 void arena_scratch_release(mem_arena_temp scratch);
 
 u32 plat_get_pagesize(void);
@@ -42,10 +43,14 @@ b32 plat_mem_commit(void* ptr, u64 size);
 b32 plat_mem_decommit(void* ptr, u64 size);
 b32 plat_mem_release(void* ptr, u64 size);
 
-#define PUSH_STRUCT_ARENA(arena, T) (T*)arena_push((arena), sizeof(T), false)
-#define PUSH_STRUCT_ARENA_NZ(arena, T) (T*)arena_push((arena), sizeof(T), true)
-#define PUSH_ARRAY_ARENA(arena, T, n) (T*)arena_push((arena), sizeof(T) * (n), false)
-#define PUSH_ARRAY_ARENA_NZ(arena, T, n) (T*)arena_push((arena), sizeof(T) * (n), true)
+#define PUSH_STRUCT_ARENA(arena, T)                        \
+    (T*)arena_push((arena), sizeof(T), false)
+#define PUSH_STRUCT_ARENA_NZ(arena, T)                     \
+    (T*)arena_push((arena), sizeof(T), true)
+#define PUSH_ARRAY_ARENA(arena, T, n)                      \
+    (T*)arena_push((arena), sizeof(T) * (n), false)
+#define PUSH_ARRAY_ARENA_NZ(arena, T, n)                   \
+    (T*)arena_push((arena), sizeof(T) * (n), true)
 
 #endif // !ARENA_H
 
@@ -84,7 +89,8 @@ arena_destroy(mem_arena* arena)
 void*
 arena_push(mem_arena* arena, u64 size, b32 non_zero)
 {
-    u64 pos_aligned = ALIGN_UP_POW2(arena->pos, ARENA_ALIGN);
+    u64 pos_aligned = ALIGN_UP_POW2(arena->pos,
+                                    ARENA_ALIGN);
     u64 new_pos = pos_aligned + size;
 
     if(new_pos > arena->reserve_size)
@@ -96,11 +102,14 @@ arena_push(mem_arena* arena, u64 size, b32 non_zero)
     {
         u64 new_commit_pos = new_pos;
         new_commit_pos += arena->commit_size - 1;
-        new_commit_pos -= new_commit_pos % arena->commit_size;
-        new_commit_pos = MIN(new_commit_pos, arena->reserve_size);
+        new_commit_pos -= new_commit_pos
+            % arena->commit_size;
+        new_commit_pos = MIN(new_commit_pos,
+                             arena->reserve_size);
 
         u8* mem = (u8*)arena + arena->commit_pos;
-        u64 commit_size = new_commit_pos - arena->commit_pos;
+        u64 commit_size = new_commit_pos
+            - arena->commit_pos;
 
         if(!plat_mem_commit(mem, commit_size))
         {
@@ -145,7 +154,8 @@ arena_clear(mem_arena* arena)
 mem_arena_temp
 arena_temp_begin(mem_arena* arena)
 {
-    return (mem_arena_temp){.arena = arena, .start_pos = arena->pos};
+    return (mem_arena_temp){.arena = arena,
+                            .start_pos = arena->pos};
 }
 
 void
@@ -214,13 +224,15 @@ plat_get_pagesize(void)
 void*
 plat_mem_reserve(u64 size)
 {
-    return VirtualAlloc(NULL, size, MEM_RESERVE, PAGE_READWRITE);
+    return VirtualAlloc(NULL, size, MEM_RESERVE,
+                        PAGE_READWRITE);
 }
 
 b32
 plat_mem_commit(void* ptr, u64 size)
 {
-    void* ret = VirtualAlloc(ptr, size, MEM_COMMIT, PAGE_READWRITE);
+    void* ret = VirtualAlloc(ptr, size, MEM_COMMIT,
+                             PAGE_READWRITE);
     return ret != NULL;
 }
 
@@ -252,14 +264,16 @@ plat_get_pagesize(void)
 void*
 plat_mem_reserve(u64 size)
 {
-    void* ptr = mmap(NULL, size, PROT_NONE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+    void* ptr = mmap(NULL, size, PROT_NONE,
+                     MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
     return (ptr == MAP_FAILED) ? NULL : ptr;
 }
 
 b32
 plat_mem_commit(void* ptr, u64 size)
 {
-    int result = mprotect(ptr, size, PROT_READ | PROT_WRITE);
+    int result = mprotect(ptr, size,
+                          PROT_READ | PROT_WRITE);
     return result == 0;
 }
 
